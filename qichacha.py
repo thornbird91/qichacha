@@ -42,8 +42,12 @@ def url_pro(dp_url, url_tail):
     #print(str(name[0]))
     name_ful = str(name0[0]) + str(name[0])
 
-    print(len(name0))
-    if len(name0):
+    #print(name0[0])
+    name0_emp = name0[0].strip()
+    #print(name0_emp)
+    #print(len(name0_emp))
+    #print(len(name0))
+    if len(name0_emp):
         warn = '不匹配'
     else:
         warn = '匹配'
@@ -61,6 +65,7 @@ def url_pro(dp_url, url_tail):
     else:
         sta = ['None']
     #print(sta)
+    print(url_tail, 'is OK')
 
 
     ### get company introduction
@@ -118,10 +123,12 @@ def write_xls(exl_name):
         row1 = line1[i].split('#')[0]
         row2 = line1[i].split('#')[1]
         row3 = line1[i].split('#')[2]
+        row4 = line1[i].split('#')[3]
         #row3 = line2[i]
         sheet1.write(rows,0,row1)
         sheet1.write(rows,1,row2)
         sheet1.write(rows,2,row3)
+        sheet1.write(rows,3,row4)
         rows +=1
     excel.save(exl_name)
 
@@ -148,10 +155,10 @@ def get_url(url_excel):
 
 
 
-url_head = 'https://www.qichacha.com/search?key='
-url_tail = '杭州士兰微电子股份有限公司'
-url_code = urllib.parse.quote(url_tail)
-dp_url = url_head + url_code
+#url_head = 'https://www.qichacha.com/search?key='
+#url_tail = '杭州士兰微电子股份有限公司'
+#url_code = urllib.parse.quote(url_tail)
+#dp_url = url_head + url_code
 #print(dp_url)
 
 
@@ -163,17 +170,17 @@ dp_url = url_head + url_code
 #get_info(dp_url)
 
 
-#if __name__ == '__main__':
-#    rd_xls_name = 'addr.xls'
-#    wr_xls_name = 'result.xls'
-#    (url_list, name_list) = get_url(rd_xls_name)
-#    for i in range(len(url_list)):
-#        url_pro(url_list[i], name_list[i])
-#        time.sleep(1)
-#    write_xls(wr_xls_name)
+if __name__ == '__main__':
+    rd_xls_name = 'addr.xls'
+    wr_xls_name = 'result.xls'
+    (url_list, name_list) = get_url(rd_xls_name)
+    for i in range(len(url_list)):
+        url_pro(url_list[i], name_list[i])
+        time.sleep(5)
+    write_xls(wr_xls_name)
 
 
-url_pro(dp_url, url_tail)
+#url_pro(dp_url, url_tail)
 #write_xls()
 #get_url('addr.xls')
 
