@@ -22,6 +22,7 @@ def bs4_url(url):
     cook = {'Cookie': 'acw_tc=AQAAAGgrNSAcygoAkvi+PBmPDE22MQYR; UM_distinctid=15ffc6bab481ea-0a35f715b0cd86-396b4c0b-13c680-15ffc6bab49324; _uab_collina=151176844175827429607132; _umdata=2FB0BDB3C12E491D4C5F1DAFA82972B3C9EF950F96D22CD73891B83C6A9EE7F1149FA242ACBF79BFCD43AD3E795C914C4204B0C4F87E6E2661EC05B36556BA3C; PHPSESSID=nu478v7agulnuaspj9cm556pd7; hasShow=1; zg_did=%7B%22did%22%3A%20%2215ffc6bab7e144-0ad6f0e5baf8f-396b4c0b-13c680-15ffc6bab7f2ef%22%7D; CNZZDATA1254842228=2058476337-1511763115-%7C1511915470; zg_de1d1a35bfa24ce29bbf2c7eb17e6c4f=%7B%22sid%22%3A%201511919013101%2C%22updated%22%3A%201511919272595%2C%22info%22%3A%201511768435606%2C%22superProperty%22%3A%20%22%7B%7D%22%2C%22platform%22%3A%20%22%7B%7D%22%2C%22utm%22%3A%20%22%7B%7D%22%2C%22referrerDomain%22%3A%20%22www.qichacha.com%22%2C%22cuid%22%3A%20%2250912a6001bf14aed5cead7a5d52c876%22%7D'}
     req = requests.get(url=url, cookies=cook, headers=headers)
     html = req.content
+    #url_cnt = BeautifulSoup(html, 'lxml')
     url_cnt = BeautifulSoup(html, 'html.parser')
     return url_cnt
 
@@ -33,7 +34,20 @@ def url_pro(dp_url, url_tail):
     #print(dp)
 
     ### get company name
-    dp_tit = dp.find_all('a', attrs={'class': 'ma_h1'})
+
+    #search_list = dp.find_all('table', attrs={'class': 'm_srchList'})
+    search_list = dp.table
+    #search_list = dp.findAll('table')
+    print(search_list)
+    tbody = search_list[0].find_all('tbody')
+    #print(tbody)
+    tr_list = tbody[0].find_all('tr')
+    print(len(tr_list))
+    tr = tr_list[0]
+    #print(tr)
+    print(len(tr))
+    dp_tit = tr.find_all('a', attrs={'class': 'ma_h1'})
+    #dp_tit = dp.find_all('a', attrs={'class': 'ma_h1'})
     #print(dp_tit)
     if len(dp_tit):
         aa = str(dp_tit[0])
@@ -57,15 +71,31 @@ def url_pro(dp_url, url_tail):
             warn = '匹配'
 
         ### get company status
-        sta_list_green = dp.find_all('span', attrs={'class': 'ma_cbt_green m-l-xs'})
-        sta_list_orange = dp.find_all('span', attrs={'class': 'ma_cbt_orange m-l-xs'})
-        if len(sta_list_green):
-            sta = re.findall('>(.*?)</span>', str(sta_list_green[0]))
-        elif len(sta_list_orange):
-            sta = re.findall('>(.*?)</span>', str(sta_list_orange[0]))
-        else:
-            sta = ['None']
+        #sta_list_green  = tr.find('span', attrs={'class': 'ma_cbt_green m-l-xs'})
+        #sta_list_orange = tr.find('span', attrs={'class': 'ma_cbt_orange m-l-xs'})
+        sta_list  = re.findall('m-l-xs">(.*?)</span>', str(tr))
+        print(sta_list)
+        #if len(sta_list_green):
+        #    sta = re.findall('>(.*?)</span>', str(sta_list_green[0]))
+        #    print('aa')
+        #    print(sta)
+        #    print(sta_list_green[0])
+        #elif len(sta_list_orange):
+        #    sta = re.findall('>(.*?)</span>', str(sta_list_orange[0]))
+        #    print('bb')
+        #    print(sta)
+        #    print(sta_list_orange[0])
+        #else:
+        #    sta = ['None']
         #print(sta)
+        td_list = tr.find_all('td')
+        #print(td_list)
+        #print(len(td_list))
+        #print(td_list[0])
+        #print(td_list[1])
+        #print(td_list[2])
+        sta = re.findall('>(.*?)</span>', td_list[2])
+        print(sta)
         print(url_tail, 'is OK')
 
     else:
@@ -137,24 +167,25 @@ def get_url(url_excel):
 
 
 
-#url_head = 'https://www.qichacha.com/search?key='
-#url_tail = '杭州下宁贸易有限公司'
-#url_code = urllib.parse.quote(url_tail)
-#dp_url = url_head + url_code
-#url_pro(dp_url, url_tail)
+url_head = 'https://www.qichacha.com/search?key='
+url_tail = '杭州士兰微电子股份有限公司'
+#url_tail = '杭州韵达贸易有限公司'
+url_code = urllib.parse.quote(url_tail)
+dp_url = url_head + url_code
+url_pro(dp_url, url_tail)
 #print(dp_url)
 
 
 
-if __name__ == '__main__':
-    rd_xls_name = 'addr1.xls'
-    wr_xls_name = 'result.xls'
-    (url_list, name_list) = get_url(rd_xls_name)
-    for i in range(len(url_list)):
-        #print(name_list[i])
-        url_pro(url_list[i], name_list[i])
-        time.sleep(2)
-    write_xls(wr_xls_name)
+#if __name__ == '__main__':
+#    rd_xls_name = 'addr1.xls'
+#    wr_xls_name = 'result.xls'
+#    (url_list, name_list) = get_url(rd_xls_name)
+#    for i in range(len(url_list)):
+#        #print(name_list[i])
+#        url_pro(url_list[i], name_list[i])
+#        time.sleep(2)
+#    write_xls(wr_xls_name)
 
 
 
