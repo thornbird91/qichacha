@@ -13,12 +13,14 @@ from xlutils.copy import copy
 def bs4_url(url):
 
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.101 Safari/537.36',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.110 Safari/537.36',
         'Accept': 'text/html, application/xhtml+xml, application/xml; q=0.9, image/webp, image/apng, */*; q=0.8',
         'Accept-Encoding': 'gzip, deflate',
         'Connection': 'keep-alive',
+        'Refer': 'http://www.qichacha.com/',
     }
-    req = requests.get(url=url, headers=headers)
+    cook = {'Cookie': 'acw_tc=AQAAAGgrNSAcygoAkvi+PBmPDE22MQYR; UM_distinctid=15ffc6bab481ea-0a35f715b0cd86-396b4c0b-13c680-15ffc6bab49324; _uab_collina=151176844175827429607132; _umdata=2FB0BDB3C12E491D4C5F1DAFA82972B3C9EF950F96D22CD73891B83C6A9EE7F1149FA242ACBF79BFCD43AD3E795C914C4204B0C4F87E6E2661EC05B36556BA3C; PHPSESSID=nu478v7agulnuaspj9cm556pd7; hasShow=1; zg_did=%7B%22did%22%3A%20%2215ffc6bab7e144-0ad6f0e5baf8f-396b4c0b-13c680-15ffc6bab7f2ef%22%7D; CNZZDATA1254842228=2058476337-1511763115-%7C1511915470; zg_de1d1a35bfa24ce29bbf2c7eb17e6c4f=%7B%22sid%22%3A%201511919013101%2C%22updated%22%3A%201511919272595%2C%22info%22%3A%201511768435606%2C%22superProperty%22%3A%20%22%7B%7D%22%2C%22platform%22%3A%20%22%7B%7D%22%2C%22utm%22%3A%20%22%7B%7D%22%2C%22referrerDomain%22%3A%20%22www.qichacha.com%22%2C%22cuid%22%3A%20%2250912a6001bf14aed5cead7a5d52c876%22%7D'}
+    req = requests.get(url=url, cookies=cook, headers=headers)
     html = req.content
     url_cnt = BeautifulSoup(html, 'html.parser')
     return url_cnt
@@ -33,77 +35,57 @@ def url_pro(dp_url, url_tail):
     ### get company name
     dp_tit = dp.find_all('a', attrs={'class': 'ma_h1'})
     #print(dp_tit)
-    aa = str(dp_tit[0])
-    href_list = re.findall('href="(.*?)"', aa)
-    href = str(href_list[0])
-    name = re.findall('<em><em>(.*?)</em></em>', aa)
-    name0 = re.findall('blank">(.*?)<em>', aa)
-    #print(str(name0[0]))
-    #print(str(name[0]))
-    name_ful = str(name0[0]) + str(name[0])
+    if len(dp_tit):
+        aa = str(dp_tit[0])
+        #href = str(href_list[0])
+        #href_list = re.findall('href="(.*?)"', aa)
+        name = re.findall('<em><em>(.*?)</em></em>', aa)
+        name0 = re.findall('blank">(.*?)<em>', aa)
 
-    #print(name0[0])
-    name0_emp = name0[0].strip()
-    #print(name0_emp)
-    #print(len(name0_emp))
-    #print(len(name0))
-    if len(name0_emp):
-        warn = '不匹配'
+        if len(name):
+            if len(name0):
+                name_ful = str(name0[0].strip()) + str(name[0].strip())
+            else:
+                name_ful = str(name[0])
+        else:
+            name_ful = ''
+
+
+        if name_ful != url_tail:
+            warn = '不匹配'
+        else:
+            warn = '匹配'
+
+        ### get company status
+        sta_list_green = dp.find_all('span', attrs={'class': 'ma_cbt_green m-l-xs'})
+        sta_list_orange = dp.find_all('span', attrs={'class': 'ma_cbt_orange m-l-xs'})
+        if len(sta_list_green):
+            sta = re.findall('>(.*?)</span>', str(sta_list_green[0]))
+        elif len(sta_list_orange):
+            sta = re.findall('>(.*?)</span>', str(sta_list_orange[0]))
+        else:
+            sta = ['None']
+        #print(sta)
+        print(url_tail, 'is OK')
+
     else:
-        warn = '匹配'
+        name_ful  = '查询不到'
+        sta = 'NULL'
+        warn = '不存在'
+        print(url_tail, '不存在')
+
     #print(name_ful)
 
-    ### get company status
-    sta_list_green = dp.find_all('span', attrs={'class': 'ma_cbt_green m-l-xs'})
-    sta_list_orange = dp.find_all('span', attrs={'class': 'ma_cbt_orange m-l-xs'})
-    if len(sta_list_green):
-        #print(sta_list_green)
-        sta = re.findall('>(.*?)</span>', str(sta_list_green[0]))
-    elif len(sta_list_orange):
-        #print(sta_list_orange)
-        sta = re.findall('>(.*?)</span>', str(sta_list_orange[0]))
-    else:
-        sta = ['None']
-    #print(sta)
-    print(url_tail, 'is OK')
+    wr_head = '输入公司名称' + '#' + '查询公司名称' + '#' + '经营状态' + '#' + '查询匹配度' + '\n'
+    ele = url_tail + '#' + name_ful + '#' + str(sta[0]) + '#' + warn + '\n'
 
+    txt1_wr.write(ele)
+    txt1_wr.close()
 
     ### get company introduction
     #cmp_intr = dp.find_all('p', attrs={'class': 'm-t-xs'})
     #print(cmp_intr[0])
 
-
-
-    #new_rtl = 'http://www.qichacha.com'+href
-    #print(new_rtl)
-    #sec_url = bs4_url(new_rtl)
-    #cmp_info = sec_url.find_all('td', attrs={'class': 'ma_left'})
-    ##print(cmp_info[13])
-    #st = str(cmp_info[13])
-    #sta = list(st.split(' '))
-    ##print(sta)
-    #while '' in sta:
-    #    sta.remove('')
-    #print(sta[2])
-    #ana_sta = sta[2].strip()
-
-    #name_chn = str(name[0])
-    #sta_chn  = str(ana_sta)
-    #rtl_chn  = str(new_rtl)
-
-    #ele = str(name_chn) + '#' + rtl_chn + '#' + str(sta_chn) + '\n'
-
-    #print(type(url_tail))
-    #print(type(name_ful))
-    #print(type(sta))
-
-    ele = url_tail + '#' + name_ful + '#' + str(sta[0]) + '#' + warn + '\n'
-
-    txt1_wr.write(ele)
-
-
-
-    txt1_wr.close()
 
 
 def write_xls(exl_name):
@@ -156,31 +138,23 @@ def get_url(url_excel):
 
 
 #url_head = 'https://www.qichacha.com/search?key='
-#url_tail = '杭州士兰微电子股份有限公司'
+#url_tail = '杭州下宁贸易有限公司'
 #url_code = urllib.parse.quote(url_tail)
 #dp_url = url_head + url_code
+#url_pro(dp_url, url_tail)
 #print(dp_url)
 
-
-#html = urllib.request.urlopen(dp_url)
-#print(html)
-#print(dp_url)
-#addr_chn = u'孩儿巷220号'
-#addr_utf = addr_chn.encode('gbk')
-#get_info(dp_url)
 
 
 if __name__ == '__main__':
-    rd_xls_name = 'addr.xls'
+    rd_xls_name = 'addr1.xls'
     wr_xls_name = 'result.xls'
     (url_list, name_list) = get_url(rd_xls_name)
     for i in range(len(url_list)):
+        #print(name_list[i])
         url_pro(url_list[i], name_list[i])
-        time.sleep(5)
+        time.sleep(2)
     write_xls(wr_xls_name)
 
 
-#url_pro(dp_url, url_tail)
-#write_xls()
-#get_url('addr.xls')
 
